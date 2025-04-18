@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 
 class Perceptron:
-    def __init__(self, learning_rate, n_epochs, activation_function, init_weight_value=0.5):
+    def __init__(self, learning_rate: float, n_epochs: int, activation_function: function, init_weight_value=0.5):
         print("Initializing Perceptron")
         self.learning_rate = learning_rate
         self.n_epochs = n_epochs
@@ -80,22 +80,26 @@ class Perceptron:
 
         return self
     
-    def predict(self, X):
-        # Use the trained model to make predictions
-        # For each input:
-            # Compute weighted sum (z = x^T·w)
-            # Apply activation_function (e.g. step function)
-            # Return predicted binary class (0 or 1)
+    
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """ Use the trained model to make predictions on new data. 
+        For each input, compute the weighted sum and apply the activation function to get the predicted class.
+        Parameters
+        ----------
+            X : np.ndarray 
+                Input data for prediction.
+        
+        Returns
+        -------
+        np.ndarray
+            Predicted binary class (0 or 1) for each input.
+        """
 
+        num_predictions = X.shape[0]
+        predictions = np.zeros(num_predictions, dtype=int)
 
-        # Initialize predictions
-        predictions = np.zeros(X.shape[0])
-        print(f"Initial Predictions: {predictions}")
-        # Loop over inputs
-        for i in range(X.shape[0]):
-            # Get input
+        for i in range(num_predictions):
             X_i = X[i]
-            print(f"Input: {X_i}")
 
             # Calculate weighted sum
             z = self._calculate_weighted_sum(X_i)
@@ -109,44 +113,42 @@ class Perceptron:
             predictions[i] = y_pred
             print(f"Updated Predictions: {predictions}")
 
-        # Return predictions
         return predictions
 
-    #region Utility methods
-    def _init_weights(self, n_features):
-        # Initialize weights to a small random number
-        self.weights = np.random.uniform(-1, 1, n_features)
-        return self.weights
-    
+
+    #region Utility methods    
     def _calculate_weighted_sum(self, X):
-        # Calculate the weighted sum of inputs and weights
-        # z = x^T·w = x_1*w_1 + x_2*w_2 + ... + x_n*w_n
-        # Note: X is a row vector (rækkevektor), and self.weights is a column vector (søjlevektor)
+        """ Calculate the weighted sum of inputs and weights 
+        Using formula: `z = x^T·w = x_1*w_1 + x_2*w_2 + ... + x_n*w_n`
+        Where: X is a row vector (rækkevektor), and self.weights is a column vector (søjlevektor)
+        """
+
         return np.dot(X, self.weights)
 
-    def _add_bias(self, X):
-        # Add a column of 1s in front of the input matrix, to handle the bias as part of the weights (so its index aligns with weight w_0)
+    def _add_bias(self, X: np.ndarray) -> np.ndarray:
+        """ Add (prepend) bias neuron to input (always 1) """
         bias = np.ones((X.shape[0], 1))
         X = np.hstack((bias, X))
         return X
 
-    def _activation(self, x):
-        # Binary step function (activation function)
-        return self.activation_function(x)
+    def _activation(self, weighted_sum):
+        """ Apply activation function to a weighted sum """
+        return self.activation_function(weighted_sum)
+    #endregion
 
     #region Testing and Evaluation
-    def score(self, X, y):
-         # Calculate method to calculate accuracy
-         # Husk at bruge 'Statistik' i metode afsnit!
-        # Calculate predictions
-        predictions = self.predict(X)
-        # Calculate accuracy
-        accuracy = np.mean(predictions == y)
+    def score(self, y_pred, y_target):
+        """ Calculate accuracy of the model on the given data """
+        
+         # TODO: Husk at bruge (tilføje) 'Statistik' i metode afsnit!
+        accuracy = np.mean(y_pred == y_target)
         print(f"Accuracy: {accuracy}")
+
         return accuracy
     
     def confusion_matrix(self, y_true, y_pred):
-        # Calculate confusion matrix
+        """ Calculate confusion matrix for binary classification """
+
         # True Positives, False Positives, True Negatives, False Negatives
         TP = np.sum((y_true == 1) & (y_pred == 1))
         TN = np.sum((y_true == 0) & (y_pred == 0))
@@ -155,21 +157,23 @@ class Perceptron:
         confusion_matrix = np.array([[TP, FP],
                                       [FN, TN]])
         print(f"Confusion Matrix:\n{confusion_matrix}")
+        
         return confusion_matrix
     
     def plot():
         # Plot to visualize decision boundaries (tærskelværdi) or training progress (loss vs epochs)
         pass
 
-    def print_structure(self):
-        # Print the structure of the model
+    def print_structure(self) -> None:
+        """ Print the structure of the Perceptron (FOR DEBUGGING PURPOSES) """
         print(f"Learning Rate: {self.learning_rate}")
         print(f"Number of Epochs: {self.n_epochs}")
         print(f"Activation Function: {self.activation_function}")
         print(f"Initial Weight Value: {self.init_weight_value}")
         print(f"Weights: {self.weights}")
 
-    def get_weights(self):
+    def get_weights(self) -> np.ndarray:
+        """ Return the weights of the Perceptron """
         return self.weights
 
         
