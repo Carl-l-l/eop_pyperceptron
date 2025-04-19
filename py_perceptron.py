@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-class Perceptron:
-    def __init__(self, learning_rate: float, n_epochs: int, activation_function: function, init_weight_value=0.5):
+class PyPerceptron:
+    def __init__(self, learning_rate: float, n_epochs: int, activation_function: object, init_weight_value=0.5):
         print("Initializing Perceptron")
         self.learning_rate = learning_rate
         self.n_epochs = n_epochs
