@@ -1,59 +1,78 @@
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 class PyPerceptron:
-    def __init__(self, learning_rate: float, n_epochs: int, activation_function: object, init_weight_value=0.5):
-        print("Initializing Perceptron")
+    def __init__(self, learning_rate: float, n_epochs: int, activation_function: object, init_weight_value=0.5, verbose=True):
         self.learning_rate = learning_rate
         self.n_epochs = n_epochs
         self.activation_function = activation_function
         self.init_weight_value = init_weight_value
-        print(f"Learning Rate: {self.learning_rate}")   
-        print(f"Number of Epochs: {self.n_epochs}")
-        
+        self.verbose = verbose
+        self.weights = None # Will be initialized when fitting
 
-
-    def fit(self, X, y):
-        # Loop over data n_epochs times
-        # For each sample:
-            # Calculate the weighted sum (z = x^T·w)
-            # Apply activation function (e.g. step function)
-            # Compute error (loss_function) (y_true - y_pred)
-            # Update weights using Perceptron Learning Algorithm
+ 
+    def fit(self, X) -> np.ndarray: 
+        """ Fit the Perceptron model to the training data. 
+        Parameters
+        ----------
+            X : np.ndarray 
+                Input data for training.
+        Returns
+        -------
+        np.ndarray
+            Input data with bias neuron added.
+        """
 
         # Add bias neuron to input (always 1)
         X = self._add_bias(X)
-        print(f"Input with Bias: {X}")
 
         # Initialize weights with its initial values - X.shape[1] is the number of features (input values)
         num_features = X.shape[1]
-        self.weights = np.full(num_features, self.init_weight_value)
-        print(f"Initial Weights: {self.weights}")
+        self.weights = np.full(num_features, self.init_weight_value) # Fills the array with the initial weight value
 
+        return X
+    
+
+    def train(self, X: np.ndarray, y: np.ndarray) -> None:
+        """ Train the Perceptron model on the provided data.
+        Parameters
+        ----------
+            X : np.ndarray 
+                Input data for training.
+            y : np.ndarray 
+                Target output for training.
+        """
+
+        if X.shape[0] != y.shape[0]:
+            raise ValueError("Number of samples in X and y must be equal.")
+        if X.shape[1] != self.weights.shape[0]:
+            raise ValueError("Number of features in X must match the number of weights. Try fitting the model first.")
+        if len(y.shape) != 1:
+            raise ValueError("y must be a 1D array.")
+        
         # Loop over epochs
         for i in range(self.n_epochs):
-            print('--'*20)
-            print(f"Epoch {i+1}/{self.n_epochs}")
+            self._print('--'*20)
+            self._print(f"Epoch {i+1}/{self.n_epochs}")
             num_weight_updates = 0 # Track how many weights were updated in this epoch, to check for convergence
 
             for j in range(X.shape[0]):
                 # Get input and target output of the current instance
                 X_i = X[j]
                 y_i = y[j]
-                print(f"Input: {X_i}, Output: {y_i}")
+                self._print(f"Input: {X_i}, Output: {y_i}")
                 
                 # Calculate weighted sum
                 z = self._calculate_weighted_sum(X_i)
-                print(f"Weighted Sum: {z}")
+                self._print(f"Weighted Sum: {z}")
 
                 # Apply activation function
                 y_pred = self._activation(z)
-                print(f"Predicted Output: {y_pred}")
+                self._print(f"Predicted Output: {y_pred}")
 
                 # Calculate error score
                 error = y_i - y_pred
-                print(f"Error: {error}")
+                self._print(f"Error: {error}")
 
                 # Update weights
                 if error != 0:
@@ -61,24 +80,23 @@ class PyPerceptron:
                     # w_ij (next step) = w_ij + learning_rate * (y_i - y_pred) * x_j
                     for k in range(len(self.weights)):
                         self.weights[k] += self.learning_rate * error * X_i[k]
-                    print(f"Updated Weights: {self.weights}")
+                    self._print(f"Updated Weights: {self.weights}")
                     num_weight_updates += 1
                 else:
-                    print("No weight update needed")
+                    self._print("No weight update needed")
                 
             if num_weight_updates == 0:
                 # A whole epoch without weight updates means it has converged toward a solution
-                print(f"Converged! After {i+1} epochs.")
+                self._print(f"Converged! After {i+1} epochs.")
+                self._print(f"Final Weights: {self.weights}")
                 break
             else:
                 if i == self.n_epochs - 1:
-                    print(f"Maximum epochs reached WITHOUT any final solution. Weights updated {num_weight_updates} times.")
-                    print(f"Final Weights: {self.weights}")
+                    self._print(f"Maximum epochs reached WITHOUT any final solution. Weights updated {num_weight_updates} times.")
+                    self._print(f"Final Weights: {self.weights}")
                 else:
-                    print(f"Number of Weight Updates: {num_weight_updates}")
-
-
-        return self
+                    self._print(f"Number of Weight Updates: {num_weight_updates}")
+        
     
     
     def predict(self, X: np.ndarray) -> np.ndarray:
@@ -103,15 +121,15 @@ class PyPerceptron:
 
             # Calculate weighted sum
             z = self._calculate_weighted_sum(X_i)
-            print(f"Weighted Sum: {z}")
+            self._print(f"Weighted Sum: {z}")
 
             # Apply activation function
             y_pred = self._activation(z)
-            print(f"Predicted Output: {y_pred}")
+            self._print(f"Predicted Output: {y_pred}")
 
             # Store prediction
             predictions[i] = y_pred
-            print(f"Updated Predictions: {predictions}")
+            self._print(f"Updated Predictions: {predictions}")
 
         return predictions
 
@@ -142,7 +160,7 @@ class PyPerceptron:
         
          # TODO: Husk at bruge (tilføje) 'Statistik' i metode afsnit!
         accuracy = np.mean(y_pred == y_target)
-        print(f"Accuracy: {accuracy}")
+        self._print(f"Accuracy: {accuracy}")
 
         return accuracy
     
@@ -156,7 +174,7 @@ class PyPerceptron:
         FN = np.sum((y_true == 1) & (y_pred == 0))
         confusion_matrix = np.array([[TP, FP],
                                       [FN, TN]])
-        print(f"Confusion Matrix:\n{confusion_matrix}")
+        self._print(f"Confusion Matrix:\n{confusion_matrix}")
         
         return confusion_matrix
     
@@ -166,15 +184,19 @@ class PyPerceptron:
 
     def print_structure(self) -> None:
         """ Print the structure of the Perceptron (FOR DEBUGGING PURPOSES) """
-        print(f"Learning Rate: {self.learning_rate}")
-        print(f"Number of Epochs: {self.n_epochs}")
-        print(f"Activation Function: {self.activation_function}")
-        print(f"Initial Weight Value: {self.init_weight_value}")
-        print(f"Weights: {self.weights}")
+        self._print(f"Learning Rate: {self.learning_rate}")
+        self._print(f"Number of Epochs: {self.n_epochs}")
+        self._print(f"Activation Function: {self.activation_function}")
+        self._print(f"Initial Weight Value: {self.init_weight_value}")
+        self._print(f"Weights: {self.weights}")
 
     def get_weights(self) -> np.ndarray:
         """ Return the weights of the Perceptron """
         return self.weights
 
+    def _print(self, message: str) -> None:
+        """ Print a message if verbose is enabled """
+        if self.verbose:
+            print(message)
         
 
