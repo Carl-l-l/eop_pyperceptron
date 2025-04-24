@@ -1,13 +1,15 @@
 import numpy as np
+import pickle
 
 
 class PyPerceptron:
-    def __init__(self, learning_rate: float, n_epochs: int, activation_function: object, init_weight_value=0.5, verbose=True):
+    def __init__(self, learning_rate: float, n_epochs: int, activation_function: object, init_weight_value=0.5, verbose=True, save_path='perceptron_model.pkl'):
         self.learning_rate = learning_rate
         self.n_epochs = n_epochs
         self.activation_function = activation_function
         self.init_weight_value = init_weight_value
         self.verbose = verbose
+        self.save_path = save_path
         self.weights = None # Will be initialized when fitting
 
  
@@ -89,11 +91,15 @@ class PyPerceptron:
                 # A whole epoch without weight updates means it has converged toward a solution
                 self._print(f"Converged! After {i+1} epochs.")
                 self._print(f"Final Weights: {self.weights}")
+                # Save with pickle
+                pickle.dump(self, open(self.save_path, 'wb'))
+                print(f"Model saved to {self.save_path}")
                 break
             else:
                 if i == self.n_epochs - 1:
-                    self._print(f"Maximum epochs reached WITHOUT any final solution. Weights updated {num_weight_updates} times.")
-                    self._print(f"Final Weights: {self.weights}")
+                    print(f'Iteration limit reached. No convergence. {i} epochs out of {self.n_epochs} epochs.')
+                    print(f"Maximum epochs reached WITHOUT any final solution. Weights updated {num_weight_updates} times.")
+                    print(f"Final Weights: {self.weights}")
                 else:
                     self._print(f"Number of Weight Updates: {num_weight_updates}")
         
@@ -112,6 +118,19 @@ class PyPerceptron:
         np.ndarray
             Predicted binary class (0 or 1) for each input.
         """
+
+        print(X.shape)
+        print(self.weights.shape)
+        print('---' * 20)
+
+        print(X)
+        print(self.weights)
+        print('---' * 20)
+
+        # If bias neuron is not added, add it
+        if X.shape[1] != self.weights.shape[0]:
+            X = self._add_bias(X)
+            self._print(f"Bias neuron added to input data: {X}")
 
         num_predictions = X.shape[0]
         predictions = np.zeros(num_predictions, dtype=int)
@@ -157,10 +176,13 @@ class PyPerceptron:
     #region Testing and Evaluation
     def score(self, y_pred, y_target):
         """ Calculate accuracy of the model on the given data """
-        
-         # TODO: Husk at bruge (tilføje) 'Statistik' i metode afsnit!
         accuracy = np.mean(y_pred == y_target)
         self._print(f"Accuracy: {accuracy}")
+
+        precision = np.sum((y_pred == 1) & (y_target == 1)) / np.sum(y_pred == 1)
+        recall = np.sum((y_pred == 1) & (y_target == 1)) / np.sum(y_target == 1)
+        print(f"Precision: {precision}")
+        print(f"Recall: {recall}")
 
         return accuracy
     
@@ -177,6 +199,16 @@ class PyPerceptron:
         self._print(f"Confusion Matrix:\n{confusion_matrix}")
         
         return confusion_matrix
+    
+    def plot_confusion_matrix(self, y_true, y_pred):
+        """ Plot confusion matrix """
+        import matplotlib.pyplot as plt
+        from sklearn.metrics import ConfusionMatrixDisplay
+
+        cm = self.confusion_matrix(y_true, y_pred)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=[0, 1])
+        disp.plot(cmap=plt.cm.Blues)
+        plt.show()
     
     def plot():
         # Plot to visualize decision boundaries (tærskelværdi) or training progress (loss vs epochs)
