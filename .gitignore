@@ -1,11 +1,18 @@
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 /data
 =======
+=======
+>>>>>>> Stashed changes
 __pycache__/
 .ipynb_checkpoints
 *.pyc
 *.pyo
 .env/
+<<<<<<< Updated upstream
 /data
 .DS_Store
 >>>>>>> 970d804 (Chapters completed.)
+=======
+/data
+>>>>>>> Stashed changes

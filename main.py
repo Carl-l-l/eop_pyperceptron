@@ -1,1 +1,0 @@
-# Create a perceptron model from scratch
