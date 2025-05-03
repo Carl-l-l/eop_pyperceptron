@@ -1,1 +1,11 @@
+<<<<<<< HEAD
 /data
+=======
+__pycache__/
+.ipynb_checkpoints
+*.pyc
+*.pyo
+.env/
+/data
+.DS_Store
+>>>>>>> 970d804 (Chapters completed.)
